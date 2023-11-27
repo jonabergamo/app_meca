@@ -3,10 +3,10 @@ import { StyleSheet } from "react-native";
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 
-export default function DashbaordScreen() {
+export default function TabTwoScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Painel de controle</Text>
+      <Text style={styles.title}>Dispositivos</Text>
     </View>
   );
 }

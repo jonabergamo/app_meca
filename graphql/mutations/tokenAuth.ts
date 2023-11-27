@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 import client from "../../apolloClient"; // Seu Apollo Client
 
 export const AUTH_TOKEN = gql`
-  mutation MyMutation {
-    tokenAuth(email: String!, password: String!) {
+  mutation AuthToken($email: String!, $password: String!) {
+    tokenAuth(email: $email, password: $password) {
       token
       user {
         email
@@ -12,6 +12,8 @@ export const AUTH_TOKEN = gql`
         isStaff
         lastName
         username
+        base64Image
+        dateJoined
       }
     }
   }
@@ -25,11 +27,10 @@ export const authenticateUser = async ({
   password: string;
 }) => {
   try {
-    const { data } = await client.mutate({
+    const response = await client.mutate({
       mutation: AUTH_TOKEN,
       variables: { email, password },
     });
-    console.log(data);
-    return data;
+    return response.data.tokenAuth;
   } catch (error) {}
 };

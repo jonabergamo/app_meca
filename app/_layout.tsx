@@ -7,8 +7,10 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
+import { View, useColorScheme } from "react-native";
 import { SessionProvider } from "../context/AuthContext";
+import { RootSiblingParent } from "react-native-root-siblings";
+import Background from "../components/Background";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -51,14 +53,23 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <SessionProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          {/* <Stack.Screen name="(user-routes)" options={{ headerShown: false }} /> */}
-          <Stack.Screen name="(auth-routes)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-        </Stack>
-      </ThemeProvider>
-    </SessionProvider>
+    <RootSiblingParent>
+      <SessionProvider>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen
+              name="(user-routes)"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="(auth-routes)"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+          </Stack>
+        </ThemeProvider>
+      </SessionProvider>
+    </RootSiblingParent>
   );
 }

@@ -38,7 +38,7 @@ export default function Login() {
   };
 
   return (
-    <Background>
+    <View style={styles.container}>
       <Logo />
       <Header>Anup</Header>
       <TextInput
@@ -80,11 +80,20 @@ export default function Login() {
           <Text style={styles.link}>Registrar-se!</Text>
         </TouchableOpacity>
       </View>
-    </Background>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    width: "100%",
+    maxWidth: 340,
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   forgotPassword: {
     width: "100%",
     alignItems: "flex-end",

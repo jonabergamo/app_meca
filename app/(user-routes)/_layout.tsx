@@ -1,9 +1,13 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Redirect, Tabs } from "expo-router";
-import { Pressable, Text, useColorScheme } from "react-native";
+import { Pressable, Text, View, useColorScheme } from "react-native";
 
 import Colors from "../../constants/Colors";
 import { useSession } from "../../context/AuthContext";
+import DeviceFill from "../../components/icons/DeviceFill";
+import DashboardFill from "../../components/icons/DashboardFill";
+import DeviceSettingsFill from "../../components/icons/DeviceSettingsFill";
+import AccountFill from "../../components/icons/AccountFill";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -44,29 +48,33 @@ export default function PrivateLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Tab One",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? "light"].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
+          title: "Painel de Controle",
+          tabBarIcon: ({ color }) => <DashboardFill color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="devices"
         options={{
-          title: "Tab Two",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Dispositivos",
+          tabBarIcon: ({ color }) => <DeviceFill color={color} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="devices_settings"
+        options={{
+          title: "Pré Definições",
+          tabBarIcon: ({ color }) => <DeviceSettingsFill color={color} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: "Minha Conta",
+          tabBarIcon: ({ color }) => <AccountFill color={color} />,
+          headerShown: false,
         }}
       />
     </Tabs>
