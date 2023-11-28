@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 import { theme } from "../../core/theme";
+import { router } from "expo-router";
 
 export default function DeviceSettingsScreen() {
   return (
@@ -10,7 +11,13 @@ export default function DeviceSettingsScreen() {
       <Text style={styles.title}>Prédefinições</Text>
       <View></View>
       <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
-        <Text style={styles.signOutText}>NOVA PREDEFINIÇÃO</Text>
+        <Text
+          style={styles.signOutText}
+          onPress={() => {
+            router.push("/new_device_setting");
+          }}>
+          NOVA PREDEFINIÇÃO
+        </Text>
       </TouchableOpacity>
     </View>
   );

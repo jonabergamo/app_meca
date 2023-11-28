@@ -11,6 +11,7 @@ import { View, useColorScheme } from "react-native";
 import { SessionProvider } from "../context/AuthContext";
 import { RootSiblingParent } from "react-native-root-siblings";
 import Background from "../components/Background";
+import { theme } from "../core/theme";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -66,7 +67,18 @@ function RootLayoutNav() {
               name="(auth-routes)"
               options={{ headerShown: false }}
             />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+            <Stack.Screen
+              name="new_device_setting"
+              options={{
+                presentation: "card",
+                headerTitle: "Criar Pré-definição",
+                headerStyle: { backgroundColor: theme.colors.primary },
+                headerTintColor: "#fff",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                },
+              }}
+            />
           </Stack>
         </ThemeProvider>
       </SessionProvider>

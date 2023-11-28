@@ -12,7 +12,7 @@ export default function TextInput({ errorText, description, ...props }) {
         underlineColor="transparent"
         textColor="white"
         mode="outlined"
-        outlineStyle={{ borderColor: theme.colors.secondary }}
+        outlineStyle={{ borderColor: theme.colors.primary }}
         {...props}
       />
       {description && !errorText ? (
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 13,
-    color: theme.colors.secondary,
+    color: theme.colors.primary,
     paddingTop: 8,
   },
   error: {

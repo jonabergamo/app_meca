@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { Session } from "../types";
 import { getUser } from "../graphql/queries/getUser";
+import { Sign } from "crypto";
 
 const AuthContext = React.createContext<{
   signIn: (email: string, password: string) => void;

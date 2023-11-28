@@ -8,5 +8,6 @@ export const theme = {
     primary: "#548e8d",
     secondary: "#1F2732",
     error: "#ED1C24",
+    onPrimaryContainer: "#fff",
   },
 };
