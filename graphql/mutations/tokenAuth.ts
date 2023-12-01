@@ -31,6 +31,9 @@ export const authenticateUser = async ({
       mutation: AUTH_TOKEN,
       variables: { email, password },
     });
+    console.log(response);
     return response.data.tokenAuth;
-  } catch (error) {}
+  } catch (error) {
+    console.error(error)
+  }
 };

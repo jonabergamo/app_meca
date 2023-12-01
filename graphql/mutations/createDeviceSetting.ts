@@ -1,17 +1,18 @@
-import { gql } from "@apollo/client";
+import { ApolloError, gql } from "@apollo/client";
 import client from "../../apolloClient"; // Seu Apollo Client
 
 export const CREATE_DEVICE_SETTING = gql`
   mutation createDeviceSetting(
-    $userId: Int!
-    $temperature: Float!
-    $incubationDuration: Int!
     $humidity: Float!
+    $name: String!
+    $temperature: Float!
+    $userId: Int!
+    $incubationDuration: Float!
   ) {
     createIncubatorSetting(
       humidity: $humidity
       incubationDuration: $incubationDuration
-      name: ""
+      name: $name
       temperature: $temperature
       userId: $userId
     ) {
@@ -26,18 +27,15 @@ export const CREATE_DEVICE_SETTING = gql`
   }
 `;
 
-export const createDeviceSetting = async ({
-  userId,
-  temperature,
-  incubationDuration,
-  humidity,
-}: {
-  userId: number;
-  temperature: number;
-  incubationDuration: number;
-  humidity: number;
-}) => {
+export const createDeviceSetting = async (
+  userId: number,
+  temperature: number,
+  incubationDuration: number,
+  humidity: number,
+  name: string
+) => {
   try {
+    console.log(userId, temperature, incubationDuration, humidity, name);
     const response = await client.mutate({
       mutation: CREATE_DEVICE_SETTING,
       variables: {
@@ -45,8 +43,11 @@ export const createDeviceSetting = async ({
         temperature,
         incubationDuration,
         humidity,
+        name,
       },
     });
     return response.data.tokenAuth;
-  } catch (error) {}
+  } catch (error: any) {
+    console.log(error.toString());
+  }
 };
