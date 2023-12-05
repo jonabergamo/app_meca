@@ -161,28 +161,30 @@ export default function CreationForm() {
                   value: setting.id,
                 });
               }}>
-              <Text style={styles.settingText}>ID: {setting.id}</Text>
-              <Text style={styles.settingText}>Nome: {setting.name}</Text>
-              <Text style={styles.settingText}>
+              <Text style={styles.deviceName}>ID: {setting.id}</Text>
+              <Text style={styles.deviceName}>Nome: {setting.name}</Text>
+              <Text style={styles.deviceText}>
                 Temperatura: {setting.temperature}°C
               </Text>
-              <Text style={styles.settingText}>
+              <Text style={styles.deviceText}>
                 Humidade: {setting.humidity}
               </Text>
-              <Text style={styles.settingText}>
+              <Text style={styles.deviceText}>
                 Duração da Incubação: {setting.incubationDuration} horas
               </Text>
 
-              <Text style={styles.settingText}>
-                Em uso por:{" "}
-                {setting?.assignedDevices?.length !== 0
-                  ? setting?.assignedDevices.map((device, index) => (
-                      <View>
-                        <Text>{device.name}</Text>
-                      </View>
-                    ))
-                  : "Nenhm"}
-              </Text>
+              <View style={styles.settingValueTitle}>
+                <Text style={styles.deviceText}>Em uso por: </Text>
+                <View style={styles.settingValueContainer}>
+                  {setting?.assignedDevices?.length !== 0
+                    ? setting?.assignedDevices.map((device, index) => (
+                        <Text style={styles.settingValueText} key={index}>
+                          {device.name}
+                        </Text>
+                      ))
+                    : "Nenhm"}
+                </View>
+              </View>
               {/* Outras informações que deseja exibir */}
             </TouchableOpacity>
           ))
@@ -227,20 +229,56 @@ const styles = StyleSheet.create({
     width: "100%", // Garante que a ScrollView ocupe toda a largura
     flex: 1,
   },
+  settingItem: {
+    backgroundColor: "#2A2E35", // Cor de fundo para cada item (ajuste conforme seu tema)
+    padding: 15, // Espaçamento interno
+    borderRadius: 10, // Bordas arredondadas
+    marginVertical: 8, // Espaçamento vertical entre itens
+    marginHorizontal: 16, // Espaçamento horizontal
+    shadowColor: "#000", // Cor da sombra
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25, // Opacidade da sombra
+    shadowRadius: 3.84, // Raio da sombra
+    elevation: 5, // Elevação para Android
+  },
+
+  deviceText: {
+    color: "white", // Cor do texto (ajuste conforme seu tema)
+    fontSize: 16, // Tamanho da fonte
+    marginBottom: 5, // Espaçamento inferior para cada linha de texto
+  },
+
+  deviceName: {
+    fontSize: 18, // Tamanho da fonte para o nome
+    fontWeight: "bold", // Negrito para o nome
+    marginBottom: 10, // Espaçamento inferior maior para o nome
+    color: "white",
+  },
   topText: {
     color: "white",
     fontSize: 20,
     paddingVertical: 10,
   },
-  error: { color: "red" },
-  settingItem: {
-    marginBottom: 15, // Espaçamento entre os itens
-    padding: 10,
-    borderRadius: 10,
-    fontSize: 30,
-    color: "white",
+  settingValueContainer: {
+    marginHorizontal: 5,
+    flexDirection: "row",
+    gap: 5,
   },
+  settingValueTitle: {
+    color: "white",
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  settingValueText: {
+    padding: 2,
+    backgroundColor: theme.colors.primary,
+  },
+  error: { color: "red" },
   settingText: {
+    display: "flex",
     color: "white",
   },
   input: {

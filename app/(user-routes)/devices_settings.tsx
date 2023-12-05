@@ -53,7 +53,6 @@ export default function DeviceSettingsScreen() {
     fetchIncubatorsSettings().then(() => setRefreshing(false));
   }, []);
 
-
   const scrollViewRef = useRef<any>();
 
   return (
@@ -70,7 +69,12 @@ export default function DeviceSettingsScreen() {
         }>
         {data ? (
           data.map((setting, index) => (
-            <View key={index} style={styles.settingItem}>
+            <TouchableOpacity
+              key={index}
+              style={styles.settingItem}
+              onPress={() => {
+                router.push("/edit_device_setting");
+              }}>
               <Text style={styles.deviceText}>ID: {setting.id}</Text>
               <Text style={styles.deviceText}>Nome: {setting.name}</Text>
               <Text style={styles.deviceText}>
@@ -83,18 +87,20 @@ export default function DeviceSettingsScreen() {
                 Duração da Incubação: {setting.incubationDuration} horas
               </Text>
 
-              <Text style={styles.deviceText}>
-                Em uso por:{" "}
-                {setting?.assignedDevices?.length !== 0
-                  ? setting?.assignedDevices.map((device, index) => (
-                      <Text key={index} style={styles.deviceText}>
-                        {device.name}
-                      </Text>
-                    ))
-                  : "Nenhum"}
-              </Text>
+              <View style={styles.settingValueTitle}>
+                <Text style={styles.deviceText}>Em uso por: </Text>
+                <View style={styles.settingValueContainer}>
+                  {setting?.assignedDevices?.length !== 0
+                    ? setting?.assignedDevices.map((device, index) => (
+                        <Text style={styles.settingValueText} key={index}>
+                          {device.name}
+                        </Text>
+                      ))
+                    : "Nenhm"}
+                </View>
+              </View>
               {/* Outras informações que deseja exibir */}
-            </View>
+            </TouchableOpacity>
           ))
         ) : (
           <Text>Nenhum dispositivo</Text>
@@ -135,6 +141,21 @@ const styles = StyleSheet.create({
   scrollView: {
     width: "100%", // Garante que a ScrollView ocupe toda a largura
     flex: 1,
+  },
+  settingValueContainer: {
+    marginHorizontal: 5,
+    flexDirection: "row",
+    gap: 5,
+  },
+  settingValueTitle: {
+    color: "white",
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "transparent",
+  },
+  settingValueText: {
+    padding: 2,
+    backgroundColor: theme.colors.primary,
   },
   settingItem: {
     backgroundColor: "#2A2E35", // Cor de fundo para cada item (ajuste conforme seu tema)

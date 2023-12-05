@@ -91,6 +91,30 @@ function RootLayoutNav() {
                 },
               }}
             />
+            <Stack.Screen
+              name="edit_device"
+              options={{
+                presentation: "card",
+                headerTitle: "Editar dispositivo",
+                headerStyle: { backgroundColor: theme.colors.primary },
+                headerTintColor: "#fff",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="edit_device_setting"
+              options={{
+                presentation: "card",
+                headerTitle: "Editar Pré-definição",
+                headerStyle: { backgroundColor: theme.colors.primary },
+                headerTintColor: "#fff",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                },
+              }}
+            />
           </Stack>
         </ThemeProvider>
       </SessionProvider>

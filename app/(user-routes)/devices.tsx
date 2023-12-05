@@ -18,6 +18,7 @@ import { toastSettings } from "../../components/ToastSettings";
 import Toast from "react-native-root-toast";
 import * as Clipboard from "expo-clipboard";
 import { Code } from "../../ccode";
+import IncubationTimer from "../../components/incubationTimer";
 
 type IncubatorDeviceType = {
   __typename: string;
@@ -103,8 +104,17 @@ export default function DeviceScreen() {
               <Text style={styles.deviceText}>
                 Inicio da incubação:{" "}
                 {device?.startTime !== null
-                  ? device?.startTime
+                  ? new Date(device.startTime).toLocaleString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                    })
                   : "Não iniciado"}
+              </Text>
+              <Text style={styles.deviceText}>
+                Tempo restante de incubação:{" "}
+                <IncubationTimer
+                  device={device}
+                  incubationDuration={device.currentSetting.incubationDuration}
+                />
               </Text>
 
               <Text style={styles.deviceText}>
@@ -116,7 +126,17 @@ export default function DeviceScreen() {
                 <Text style={styles.deviceName}>ID do dispositivo:</Text>
                 <Text style={styles.deviceText}>{device.uniqueId}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
+              <TouchableOpacity
+                style={styles.signOutButton}
+                onPress={() => {
+                  copyToClipboard(
+                    Code(session.token, device.uniqueId, "teste", "senha@123")
+                  );
+                  Toast.show(
+                    "Código base copiado com sucesso, envie para seu microcontrolador"
+                  ),
+                    toastSettings;
+                }}>
                 <Text
                   style={styles.signOutText}
                   onPress={() => {
@@ -135,7 +155,11 @@ export default function DeviceScreen() {
           ))}
       </ScrollView>
       <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-        <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => {
+            router.push("/new_device");
+          }}>
           <Text
             style={styles.signOutText}
             onPress={() => {
@@ -144,7 +168,11 @@ export default function DeviceScreen() {
             NOVO DISPOSITIVO
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => {
+            onRefresh();
+          }}>
           <Text
             style={styles.signOutText}
             onPress={() => {
