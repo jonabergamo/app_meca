@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Button,
   View,
@@ -17,6 +17,8 @@ import { toastSettings } from "../components/ToastSettings";
 import TextInput from "../components/TextInput";
 import { createDevice } from "../graphql/mutations/createDevice";
 import { getUserIncubatorSettings } from "../graphql/queries/userIncubatorSettings";
+import { Picker } from "@react-native-picker/picker"; // Importe Picker de @react-native-picker/picker
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
 type IncubatorSettingType = {
   __typename: string;
@@ -29,20 +31,18 @@ type IncubatorSettingType = {
 };
 
 export default function CreationForm() {
-    const sessionInfo = useSession();
+  const sessionInfo = useSession();
+  const [refreshing, setRefreshing] = useState(false);
 
   const [name, setName] = useState({ value: "", error: "" });
-  const [currentSetting, setCurrentSetting] = useState({
+
+  const [incubatorsSettings, setIncubatorsSettings] = useState<
+    IncubatorSettingType[]
+  >([]);
+  const [selectedSettingId, setSelectedSettingId] = useState({
     value: "",
     error: "",
   });
-  const [incubatorsSettings, setIncubatorsSettings] = useState<IncubatorSettingType[]>([]);
-  const [selectedSetting, setSelectedSetting] = useState({
-    value: "",
-    error: "",
-  });
-
-
 
   if (!sessionInfo || !sessionInfo.session) {
     return <Text>Session info not available</Text>;
@@ -54,7 +54,7 @@ export default function CreationForm() {
     return <Text>Loading...</Text>;
   }
 
-    const fetchIncubatorsSettings = async () => {
+  const fetchIncubatorsSettings = async () => {
     try {
       const response = await getUserIncubatorSettings(
         parseInt(session.user.id)
@@ -65,48 +65,51 @@ export default function CreationForm() {
 
   useEffect(() => {
     fetchIncubatorsSettings();
-  }, []);
-
+  }, [session]);
 
   const onCreatePressed = async () => {
-    const nameError = name.value ? null : "A configuração precisa de um nome";
-    const currentSettingError = currentSetting.value
+    const nameError = name.value ? null : "O dispositivo precisa de um nome";
+    const selectedSettingIdError = selectedSettingId.value
       ? null
       : "Você precisa escolher uma configuração";
 
-    if (
-      nameError ||
-      currentSettingError ||
-
-    ) {
+    if (nameError || selectedSettingIdError) {
       setName({ ...name, error: nameError || "" });
-      setCurrentSetting({ ...currentSetting, error: currentSettingError || "" });
-    }
-    try {
-      const response = await createDevice(
-        parseInt(session.user.id),
-        name.value,
-        selectedSetting
-      );
-      if (response) {
-        Toast.show("Configuração criada com sucesso", toastSettings);
+      setSelectedSettingId({
+        ...selectedSettingId,
+        error: selectedSettingIdError || "",
+      });
+    } else {
+      try {
+        const response = await createDevice(
+          parseInt(session.user.id),
+          name.value,
+          parseInt(selectedSettingId.value) // Usar 'selectedSettingId' diretamente
+        );
+        if (response) {
+          Toast.show("Configuração criada com sucesso", toastSettings);
 
-        // Limpar campos
-        setName({ value: "", error: "" });
-        setHumidity({ value: "", error: "" });
-        setTemperature({ value: "", error: "" });
-        setIncubationDuration({ value: "", error: "" });
+          // Limpar campos
+          setName({ value: "", error: "" });
+          setSelectedSettingId({ value: "", error: "" }); // Apenas definir como string vazia
 
-        // Redirecionar para a página desejada
-        router.push("/(user-routes)/devices_settings");
+          // Redirecionar para a página desejada
+          router.push("/(user-routes)/devices");
+        }
+      } catch (err: any) {
+        ToastAndroid.show(
+          `Um erro ocorreu ${err.toString()}`,
+          ToastAndroid.SHORT
+        );
       }
-    } catch (err: any) {
-      ToastAndroid.show(
-        `Um erro ocorreu ${err.toString()}`,
-        ToastAndroid.SHORT
-      );
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchIncubatorsSettings().then(() => setRefreshing(false));
+  }, []);
+  const scrollViewRef = useRef<any>();
 
   return (
     <View style={styles.container}>
@@ -128,52 +131,83 @@ export default function CreationForm() {
         textContentType="name"
         keyboardType="default"
       />
-      <TextInput
-        description=""
-        label="Humidade (kg/m³)"
-        returnKeyType="next"
-        labelStyle={{ color: theme.colors.primary }}
-        value={humidity.value}
-        onChangeText={(text: string) => setHumidity({ value: text, error: "" })}
-        error={!!humidity.error}
-        errorText={humidity.error}
-        autoCapitalize="none"
-        autoCompleteType="name"
-        textContentType="name"
-        keyboardType="decimal-pad"
-      />
-      <TextInput
-        description=""
-        label="Temperatura (Graus Celcius)"
-        returnKeyType="next"
-        labelStyle={{ color: theme.colors.primary }}
-        value={temperature.value}
-        onChangeText={(text: string) =>
-          setTemperature({ value: text, error: "" })
+      <Text style={styles.topText}>Selecione a configuração desejada:</Text>
+      {selectedSettingId.error && (
+        <Text style={styles.error}>{selectedSettingId.error}</Text>
+      )}
+      <ScrollView
+        ref={scrollViewRef}
+        onContentSizeChange={() =>
+          scrollViewRef.current?.scrollToEnd({ animated: true })
         }
-        error={!!temperature.error}
-        errorText={temperature.error}
-        autoCapitalize="none"
-        autoCompleteType="name"
-        textContentType="name"
-        keyboardType="decimal-pad"
-      />
-      <TextInput
-        description=""
-        label="Tempo de incubação (horas)"
-        returnKeyType="next"
-        labelStyle={{ color: theme.colors.primary }}
-        value={incubationDuration.value}
-        onChangeText={(text: string) =>
-          setIncubationDuration({ value: text, error: "" })
-        }
-        error={!!incubationDuration.error}
-        errorText={incubationDuration.error}
-        autoCapitalize="none"
-        autoCompleteType="name"
-        textContentType="name"
-        keyboardType="decimal-pad"
-      />
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        {incubatorsSettings ? (
+          incubatorsSettings.map((setting, index) => (
+            <TouchableOpacity
+              key={index}
+              style={{
+                ...styles.settingItem,
+                backgroundColor:
+                  setting.id === selectedSettingId.value
+                    ? theme.colors.primary
+                    : "#161616",
+              }}
+              onPress={() => {
+                setSelectedSettingId({
+                  ...selectedSettingId,
+                  value: setting.id,
+                });
+              }}>
+              <Text style={styles.settingText}>ID: {setting.id}</Text>
+              <Text style={styles.settingText}>Nome: {setting.name}</Text>
+              <Text style={styles.settingText}>
+                Temperatura: {setting.temperature}°C
+              </Text>
+              <Text style={styles.settingText}>
+                Humidade: {setting.humidity}
+              </Text>
+              <Text style={styles.settingText}>
+                Duração da Incubação: {setting.incubationDuration} horas
+              </Text>
+
+              <Text style={styles.settingText}>
+                Em uso por:{" "}
+                {setting?.assignedDevices?.length !== 0
+                  ? setting?.assignedDevices.map((device, index) => (
+                      <View>
+                        <Text>{device.name}</Text>
+                      </View>
+                    ))
+                  : "Nenhm"}
+              </Text>
+              {/* Outras informações que deseja exibir */}
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View>
+            <Text style={styles.settingText}>
+              Nenhuma configuração encontrada, crie uma aqui
+            </Text>
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={() => {
+                router.push("/new_device_setting");
+              }}>
+              <Text
+                style={styles.sendButtonText}
+                onPress={() => {
+                  router.push("/new_device_setting");
+                }}>
+                CRIAR CONFIGURAÇÃO
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
+
       <TouchableOpacity style={styles.sendButton} onPress={onCreatePressed}>
         <Text style={styles.sendButtonText} onPress={onCreatePressed}>
           CRIAR
@@ -188,6 +222,26 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-start",
+  },
+  scrollView: {
+    width: "100%", // Garante que a ScrollView ocupe toda a largura
+    flex: 1,
+  },
+  topText: {
+    color: "white",
+    fontSize: 20,
+    paddingVertical: 10,
+  },
+  error: { color: "red" },
+  settingItem: {
+    marginBottom: 15, // Espaçamento entre os itens
+    padding: 10,
+    borderRadius: 10,
+    fontSize: 30,
+    color: "white",
+  },
+  settingText: {
+    color: "white",
   },
   input: {
     height: 40,
@@ -213,8 +267,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   image: {
-    width: 300,
-    height: 300,
+    width: 100,
+    height: 100,
     marginBottom: 8,
   },
 });

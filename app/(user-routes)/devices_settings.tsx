@@ -53,6 +53,7 @@ export default function DeviceSettingsScreen() {
     fetchIncubatorsSettings().then(() => setRefreshing(false));
   }, []);
 
+
   const scrollViewRef = useRef<any>();
 
   return (
@@ -70,23 +71,27 @@ export default function DeviceSettingsScreen() {
         {data ? (
           data.map((setting, index) => (
             <View key={index} style={styles.settingItem}>
-              <Text>ID: {setting.id}</Text>
-              <Text>Nome: {setting.name}</Text>
-              <Text>Temperatura: {setting.temperature}°C</Text>
-              <Text>Humidade: {setting.humidity}</Text>
-              <Text>
+              <Text style={styles.deviceText}>ID: {setting.id}</Text>
+              <Text style={styles.deviceText}>Nome: {setting.name}</Text>
+              <Text style={styles.deviceText}>
+                Temperatura: {setting.temperature}°C
+              </Text>
+              <Text style={styles.deviceText}>
+                Humidade: {setting.humidity}%
+              </Text>
+              <Text style={styles.deviceText}>
                 Duração da Incubação: {setting.incubationDuration} horas
               </Text>
 
-              <Text>
+              <Text style={styles.deviceText}>
                 Em uso por:{" "}
                 {setting?.assignedDevices?.length !== 0
                   ? setting?.assignedDevices.map((device, index) => (
-                      <View>
-                        <Text>{device.name}</Text>
-                      </View>
+                      <Text key={index} style={styles.deviceText}>
+                        {device.name}
+                      </Text>
                     ))
-                  : "Nenhm"}
+                  : "Nenhum"}
               </Text>
               {/* Outras informações que deseja exibir */}
             </View>
@@ -132,11 +137,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingItem: {
-    marginBottom: 15, // Espaçamento entre os itens
-    backgroundColor: "#202123",
-    padding: 10,
-    borderRadius: 10,
-    fontSize: 30,
+    backgroundColor: "#2A2E35", // Cor de fundo para cada item (ajuste conforme seu tema)
+    padding: 15, // Espaçamento interno
+    borderRadius: 10, // Bordas arredondadas
+    marginVertical: 8, // Espaçamento vertical entre itens
+    marginHorizontal: 16, // Espaçamento horizontal
+    shadowColor: "#000", // Cor da sombra
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25, // Opacidade da sombra
+    shadowRadius: 3.84, // Raio da sombra
+    elevation: 5, // Elevação para Android
+  },
+
+  deviceText: {
+    color: "white", // Cor do texto (ajuste conforme seu tema)
+    fontSize: 16, // Tamanho da fonte
+    marginBottom: 5, // Espaçamento inferior para cada linha de texto
+  },
+
+  deviceName: {
+    fontSize: 18, // Tamanho da fonte para o nome
+    fontWeight: "bold", // Negrito para o nome
+    marginBottom: 10, // Espaçamento inferior maior para o nome
   },
   title: {
     fontSize: 20,

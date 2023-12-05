@@ -14,6 +14,10 @@ import {
 import { useSession } from "../../context/AuthContext";
 import { ScrollView } from "react-native-gesture-handler";
 import { getUserIncubatorDevices } from "../../graphql/queries/userIncubatorDevices";
+import { toastSettings } from "../../components/ToastSettings";
+import Toast from "react-native-root-toast";
+import * as Clipboard from "expo-clipboard";
+import { Code } from "../../ccode";
 
 type IncubatorDeviceType = {
   __typename: string;
@@ -60,6 +64,11 @@ export default function DeviceScreen() {
 
   const scrollViewRef = useRef<any>();
 
+  const copyToClipboard = async (id: string) => {
+    await Clipboard.setStringAsync(id);
+    Toast.show("ID Copiado", toastSettings);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Dispositivos</Text>
@@ -74,17 +83,54 @@ export default function DeviceScreen() {
         }>
         {data &&
           data.map((device, index) => (
-            <View key={index} style={styles.settingItem} >
-              <Text>Nome: {device.name}</Text>
-              <Text>Estado: {device?.isOn ? "Ligado" : "Desligado"}</Text>
-              <Text>Sensor de Humidade: {device.humiditySensor}</Text>
-              <Text>Sesnor de Temperatura: {device.temperatureSensor}°C</Text>
-              <Text>
-                Hora de inicio da incubação: {device?.startTime !== null ? device?.startTime : 'Não iniciado'}
+            <View key={index} style={styles.settingItem}>
+              <Text style={styles.deviceName}>Nome: {device.name}</Text>
+              <Text
+                style={[
+                  styles.deviceName,
+                  { color: device?.isOn ? "green" : "red" },
+                ]}>
+                {device?.isOn ? "Ligado" : "Desligado"}
+              </Text>
+              <Text style={styles.deviceText}>
+                Sensor de Humidade: {device.humiditySensor}% /{" "}
+                {device.currentSetting.humidity}%
+              </Text>
+              <Text style={styles.deviceText}>
+                Sensor de Temperatura: {device.temperatureSensor}°C /{" "}
+                {device.currentSetting.temperature}°C
+              </Text>
+              <Text style={styles.deviceText}>
+                Inicio da incubação:{" "}
+                {device?.startTime !== null
+                  ? device?.startTime
+                  : "Não iniciado"}
               </Text>
 
-              <Text></Text>
-              {/* Outras informações que deseja exibir */}
+              <Text style={styles.deviceText}>
+                Configuração atual: {device.currentSetting.name}
+              </Text>
+              <TouchableOpacity
+                style={{ padding: 10 }}
+                onPress={() => copyToClipboard(device.uniqueId)}>
+                <Text style={styles.deviceName}>ID do dispositivo:</Text>
+                <Text style={styles.deviceText}>{device.uniqueId}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
+                <Text
+                  style={styles.signOutText}
+                  onPress={() => {
+                    copyToClipboard(
+                      Code(session.token, device.uniqueId, "teste", "senha@123")
+                    );
+                    Toast.show(
+                      "Código copiado com sucesso, envie para seu microcontrolador"
+                    ),
+                      toastSettings;
+                  }}>
+                  COPIAR CÓDIGO EM C
+                </Text>
+              </TouchableOpacity>
             </View>
           ))}
       </ScrollView>
@@ -125,11 +171,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingItem: {
-    marginBottom: 15, // Espaçamento entre os itens
-    backgroundColor: "#202123",
-    padding: 10,
-    borderRadius: 10,
-    fontSize: 30,
+    backgroundColor: "#2A2E35", // Cor de fundo para cada item (ajuste conforme seu tema)
+    padding: 15, // Espaçamento interno
+    borderRadius: 10, // Bordas arredondadas
+    marginVertical: 8, // Espaçamento vertical entre itens
+    marginHorizontal: 16, // Espaçamento horizontal
+    shadowColor: "#000", // Cor da sombra
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25, // Opacidade da sombra
+    shadowRadius: 3.84, // Raio da sombra
+    elevation: 5, // Elevação para Android
+  },
+
+  deviceText: {
+    color: "white", // Cor do texto (ajuste conforme seu tema)
+    fontSize: 16, // Tamanho da fonte
+    marginBottom: 5, // Espaçamento inferior para cada linha de texto
+  },
+
+  deviceName: {
+    fontSize: 18, // Tamanho da fonte para o nome
+    fontWeight: "bold", // Negrito para o nome
+    marginBottom: 10, // Espaçamento inferior maior para o nome
   },
   title: {
     fontSize: 20,
