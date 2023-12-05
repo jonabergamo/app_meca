@@ -79,6 +79,18 @@ function RootLayoutNav() {
                 },
               }}
             />
+            <Stack.Screen
+              name="new_device"
+              options={{
+                presentation: "card",
+                headerTitle: "Criar Dispositivo",
+                headerStyle: { backgroundColor: theme.colors.primary },
+                headerTintColor: "#fff",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                },
+              }}
+            />
           </Stack>
         </ThemeProvider>
       </SessionProvider>

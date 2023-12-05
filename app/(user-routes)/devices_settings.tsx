@@ -17,7 +17,7 @@ import { ScrollView } from "react-native-gesture-handler";
 
 type IncubatorSettingType = {
   __typename: string;
-  assignedDevices: { uniqueId: string }[]; // Substitua 'any' pelo tipo apropriado se os dispositivos atribuídos tiverem uma estrutura conhecida
+  assignedDevices: { uniqueId: string; name: string }[]; // Substitua 'any' pelo tipo apropriado se os dispositivos atribuídos tiverem uma estrutura conhecida
   humidity: number;
   id: string;
   incubationDuration: number;
@@ -67,29 +67,33 @@ export default function DeviceSettingsScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {data.map((setting, index) => (
-          <View key={index} style={styles.settingItem}>
-            <Text>ID: {setting.id}</Text>
-            <Text>Nome: {setting.name}</Text>
-            <Text>Temperatura: {setting.temperature}°C</Text>
-            <Text>Humidade: {setting.humidity}</Text>
-            <Text>
-              Duração da Incubação: {setting.incubationDuration} horas
-            </Text>
+        {data ? (
+          data.map((setting, index) => (
+            <View key={index} style={styles.settingItem}>
+              <Text>ID: {setting.id}</Text>
+              <Text>Nome: {setting.name}</Text>
+              <Text>Temperatura: {setting.temperature}°C</Text>
+              <Text>Humidade: {setting.humidity}</Text>
+              <Text>
+                Duração da Incubação: {setting.incubationDuration} horas
+              </Text>
 
-            <Text>
-              Em uso por:{" "}
-              {setting.assignedDevices.length !== 0
-                ? setting.assignedDevices.map((device, index) => (
-                    <Text>
-                      {device.uniqueId}
-                    </Text>
-                  ))
-                : "Nenhm"}
-            </Text>
-            {/* Outras informações que deseja exibir */}
-          </View>
-        ))}
+              <Text>
+                Em uso por:{" "}
+                {setting?.assignedDevices?.length !== 0
+                  ? setting?.assignedDevices.map((device, index) => (
+                      <View>
+                        <Text>{device.name}</Text>
+                      </View>
+                    ))
+                  : "Nenhm"}
+              </Text>
+              {/* Outras informações que deseja exibir */}
+            </View>
+          ))
+        ) : (
+          <Text>Nenhum dispositivo</Text>
+        )}
       </ScrollView>
       <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
         <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>

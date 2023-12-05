@@ -11,6 +11,7 @@ export const USER_INCUBATOR_SETTINGS = gql`
       name
       assignedDevices {
         uniqueId
+        name
       }
     }
   }
