@@ -8,13 +8,13 @@ import {
   Image,
   ToastAndroid,
 } from "react-native";
-import TextInput from "../components/TextInput";
 import { theme } from "../core/theme";
 import { router } from "expo-router";
-import { createDeviceSetting } from "@/graphql/mutations/createDeviceSetting";
-import { useSession } from "@/context/AuthContext";
 import Toast from "react-native-root-toast";
-import { toastSettings } from "@/components/ToastSettings";
+import { useSession } from "../context/AuthContext";
+import { createDeviceSetting } from "../graphql/mutations/createDeviceSetting";
+import { toastSettings } from "../components/ToastSettings";
+import TextInput from "../components/TextInput";
 
 export default function CreationForm() {
   const [humidity, setHumidity] = useState({ value: "", error: "" });
@@ -70,7 +70,16 @@ export default function CreationForm() {
         name.value
       );
       if (response) {
-        Toast.show("Login bem sucedido", toastSettings);
+        Toast.show("Configuração criada com sucesso", toastSettings);
+
+        // Limpar campos
+        setName({ value: "", error: "" });
+        setHumidity({ value: "", error: "" });
+        setTemperature({ value: "", error: "" });
+        setIncubationDuration({ value: "", error: "" });
+
+        // Redirecionar para a página desejada
+        router.push("/(user-routes)/devices_settings");
       }
     } catch (err: any) {
       ToastAndroid.show(

@@ -35,7 +35,6 @@ export const createDeviceSetting = async (
   name: string
 ) => {
   try {
-    console.log(userId, temperature, incubationDuration, humidity, name);
     const response = await client.mutate({
       mutation: CREATE_DEVICE_SETTING,
       variables: {
@@ -46,7 +45,7 @@ export const createDeviceSetting = async (
         name,
       },
     });
-    return response.data.tokenAuth;
+    return response;
   } catch (error: any) {
     console.log(error.toString());
   }

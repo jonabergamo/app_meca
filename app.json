@@ -37,8 +37,7 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
+      "typedRoutes": true
     }
   }
 }
