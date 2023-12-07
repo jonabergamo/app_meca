@@ -6,12 +6,22 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
-import { View, useColorScheme } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Button, Platform, View, useColorScheme } from "react-native";
 import { SessionProvider } from "../context/AuthContext";
 import { RootSiblingParent } from "react-native-root-siblings";
 import Background from "../components/Background";
 import { theme } from "../core/theme";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowAlert: true,
+  }),
+});
 
 export {
   // Catch any errors thrown by the Layout component.

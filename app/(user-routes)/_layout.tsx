@@ -8,6 +8,10 @@ import DeviceFill from "../../components/icons/DeviceFill";
 import DashboardFill from "../../components/icons/DashboardFill";
 import DeviceSettingsFill from "../../components/icons/DeviceSettingsFill";
 import AccountFill from "../../components/icons/AccountFill";
+import { theme } from "../../core/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -44,12 +48,34 @@ export default function PrivateLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarLabelPosition: "below-icon",
+        tabBarLabelStyle: {
+          fontWeight: "bold",
+          fontSize: 12,
+          color: "white",
+        },
+        tabBarStyle: {
+          backgroundColor: theme.colors.primary,
+          height: 90,
+          paddingVertical: 10,
+          paddingBottom: 10,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: "Painel de Controle",
-          tabBarIcon: ({ color }) => <DashboardFill color={color} />,
+          tabBarIcon: ({ color, focused, size }) => (
+            <MaterialCommunityIcons
+              name={
+                focused
+                  ? "view-dashboard-variant"
+                  : "view-dashboard-variant-outline"
+              }
+              size={35}
+              color="white"
+            />
+          ),
           headerShown: false,
         }}
       />
@@ -57,7 +83,13 @@ export default function PrivateLayout() {
         name="devices"
         options={{
           title: "Dispositivos",
-          tabBarIcon: ({ color }) => <DeviceFill color={color} />,
+          tabBarIcon: ({ color, focused, size }) => (
+            <Ionicons
+              name={focused ? "cube" : "cube-outline"}
+              size={35}
+              color="white"
+            />
+          ),
           headerShown: false,
         }}
       />
@@ -65,7 +97,17 @@ export default function PrivateLayout() {
         name="devices_settings"
         options={{
           title: "Pré Definições",
-          tabBarIcon: ({ color }) => <DeviceSettingsFill color={color} />,
+          tabBarIcon: ({ color, focused, size }) => (
+            <MaterialCommunityIcons
+              name={
+                focused
+                  ? "card-bulleted-settings"
+                  : "card-bulleted-settings-outline"
+              }
+              size={35}
+              color="white"
+            />
+          ),
           headerShown: false,
         }}
       />
@@ -73,7 +115,13 @@ export default function PrivateLayout() {
         name="account"
         options={{
           title: "Minha Conta",
-          tabBarIcon: ({ color }) => <AccountFill color={color} />,
+          tabBarIcon: ({ color, focused, size }) => (
+            <MaterialCommunityIcons
+              name={focused ? "account-circle" : "account-circle-outline"}
+              size={35}
+              color="white"
+            />
+          ),
           headerShown: false,
         }}
       />

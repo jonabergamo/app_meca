@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   View,
@@ -9,14 +9,51 @@ import {
   ToastAndroid,
 } from "react-native";
 import { theme } from "../core/theme";
-import { router } from "expo-router";
+import { router, useGlobalSearchParams } from "expo-router";
 import Toast from "react-native-root-toast";
 import { useSession } from "../context/AuthContext";
 import { createDeviceSetting } from "../graphql/mutations/createDeviceSetting";
 import { toastSettings } from "../components/ToastSettings";
 import TextInput from "../components/TextInput";
+import { getIncubatorSetting } from "../graphql/queries/incubatorSetting";
+import { updateDeviceSetting } from "../graphql/mutations/updateDeviceSetting";
+import { deleteDeviceSetting } from "../graphql/mutations/deleteDeviceSetting";
+import ShureDeleteModal from "../components/ShureDeleteModal";
 
-export default function CreationForm() {
+type IncubatorSettingType = {
+  __typename: string;
+  assignedDevices: { uniqueId: string; name: string }[]; // Substitua 'any' pelo tipo apropriado se os dispositivos atribuídos tiverem uma estrutura conhecida
+  humidity: number;
+  id: string;
+  incubationDuration: number;
+  name: string;
+  temperature: number;
+};
+export default function EditSettingForm() {
+  const { device_setting } = useGlobalSearchParams();
+  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+
+  const sessionInfo = useSession();
+
+  if (!sessionInfo || !sessionInfo.session) {
+    return <Text>Session info not available</Text>;
+  }
+  const { session } = sessionInfo;
+  const [data, setData] = useState<IncubatorSettingType>();
+
+  const fetchIncubatorsSetting = async () => {
+    try {
+      const response = await getIncubatorSetting(
+        parseInt(device_setting as string)
+      );
+      setData(response);
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    fetchIncubatorsSetting();
+  }, []);
+
   const [humidity, setHumidity] = useState({ value: "", error: "" });
   const [incubationDuration, setIncubationDuration] = useState({
     value: "",
@@ -24,20 +61,20 @@ export default function CreationForm() {
   });
   const [name, setName] = useState({ value: "", error: "" });
   const [temperature, setTemperature] = useState({ value: "", error: "" });
-  const sessionInfo = useSession();
 
-  if (!sessionInfo) {
-    // Lidar com o caso em que sessionInfo é null
-    return <Text>Session info not available</Text>;
-  }
+  useEffect(() => {
+    if (data) {
+      setName({ value: data.name, error: "" });
+      setHumidity({ value: data.humidity.toString(), error: "" });
+      setIncubationDuration({
+        value: data.incubationDuration.toString(),
+        error: "",
+      });
+      setTemperature({ value: data.temperature.toString(), error: "" });
+    }
+  }, [data]);
 
-  const { session, isLoading } = sessionInfo;
-
-  if (isLoading) {
-    return <Text>Loading...</Text>;
-  }
-
-  const onCreatePressed = async () => {
+  const onEditPressed = async () => {
     const nameError = name.value ? null : "A configuração precisa de um nome";
     const humidityError = humidity.value ? null : "A humidade é necessária";
     const temperatureError = temperature.value
@@ -62,15 +99,15 @@ export default function CreationForm() {
       });
     }
     try {
-      const response = await createDeviceSetting(
-        parseInt(session?.user.id || ""),
-        parseFloat(temperature.value),
-        parseFloat(incubationDuration.value),
+      const response = await updateDeviceSetting(
+        parseInt(device_setting as string),
+        name.value,
         parseFloat(humidity.value),
-        name.value
+        parseFloat(incubationDuration.value),
+        parseFloat(temperature.value)
       );
       if (response) {
-        Toast.show("Configuração criada com sucesso", toastSettings);
+        Toast.show("Configuração editada com sucesso", toastSettings);
 
         // Limpar campos
         setName({ value: "", error: "" });
@@ -79,7 +116,7 @@ export default function CreationForm() {
         setIncubationDuration({ value: "", error: "" });
 
         // Redirecionar para a página desejada
-        router.push("/(user-routes)/devices_settings");
+        router.push("/devices_settings?refresh=true");
       }
     } catch (err: any) {
       ToastAndroid.show(
@@ -89,8 +126,36 @@ export default function CreationForm() {
     }
   };
 
+  const onDeletePressed = async () => {
+    try {
+      const response = await deleteDeviceSetting(
+        parseInt(device_setting as string)
+      );
+      if (response.success) {
+        Toast.show("Configuração apagada com sucesso", toastSettings);
+
+        // Redirecionar para a página desejada
+        router.push("/devices_settings?refresh=true");
+      }
+    } catch (err: any) {
+      ToastAndroid.show(
+        `Um erro ocorreu ao deletar${err.toString()}`,
+        ToastAndroid.SHORT
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
+      <ShureDeleteModal
+        visible={isDeleteVisible}
+        onCancel={() => {
+          setIsDeleteVisible(false);
+        }}
+        onConfirm={() => {
+          onDeletePressed();
+        }}
+      />
       <Image
         source={require("../assets/device_settings.png")}
         style={styles.image}
@@ -155,11 +220,26 @@ export default function CreationForm() {
         textContentType="name"
         keyboardType="decimal-pad"
       />
-      <TouchableOpacity style={styles.sendButton} onPress={onCreatePressed}>
-        <Text style={styles.sendButtonText} onPress={onCreatePressed}>
-          CRIAR
-        </Text>
-      </TouchableOpacity>
+      <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+        <TouchableOpacity style={styles.sendButton} onPress={onEditPressed}>
+          <Text style={styles.sendButtonText} onPress={onEditPressed}>
+            SALVAR
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => {
+            setIsDeleteVisible(true);
+          }}>
+          <Text
+            style={styles.sendButtonText}
+            onPress={() => {
+              setIsDeleteVisible(true);
+            }}>
+            DELETAR
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -181,6 +261,16 @@ const styles = StyleSheet.create({
   sendButton: {
     marginTop: 20,
     backgroundColor: theme.colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteButton: {
+    marginTop: 20,
+    backgroundColor: "red",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,

@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, TouchableOpacity } from "react-native";
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 import { theme } from "../../core/theme";
-import { router } from "expo-router";
+import { router, useGlobalSearchParams } from "expo-router";
 import {
   MutableRefObject,
   useCallback,
@@ -26,6 +26,7 @@ type IncubatorSettingType = {
 };
 
 export default function DeviceSettingsScreen() {
+  const { refresh } = useGlobalSearchParams();
   const sessionInfo = useSession();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -46,7 +47,7 @@ export default function DeviceSettingsScreen() {
 
   useEffect(() => {
     fetchIncubatorsSettings();
-  }, []);
+  }, [refresh]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -73,7 +74,9 @@ export default function DeviceSettingsScreen() {
               key={index}
               style={styles.settingItem}
               onPress={() => {
-                router.push("/edit_device_setting");
+                router.push(
+                  `/edit_device_setting?device_setting=${setting.id}`
+                );
               }}>
               <Text style={styles.deviceText}>ID: {setting.id}</Text>
               <Text style={styles.deviceText}>Nome: {setting.name}</Text>
@@ -90,13 +93,15 @@ export default function DeviceSettingsScreen() {
               <View style={styles.settingValueTitle}>
                 <Text style={styles.deviceText}>Em uso por: </Text>
                 <View style={styles.settingValueContainer}>
-                  {setting?.assignedDevices?.length !== 0
-                    ? setting?.assignedDevices.map((device, index) => (
-                        <Text style={styles.settingValueText} key={index}>
-                          {device.name}
-                        </Text>
-                      ))
-                    : "Nenhm"}
+                  {setting?.assignedDevices?.length !== 0 ? (
+                    setting?.assignedDevices.map((device, index) => (
+                      <Text style={styles.settingValueText} key={index}>
+                        {device.name}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text>Nenhum</Text>
+                  )}
                 </View>
               </View>
               {/* Outras informações que deseja exibir */}
@@ -107,7 +112,11 @@ export default function DeviceSettingsScreen() {
         )}
       </ScrollView>
       <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-        <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => {
+            router.push("/new_device_setting");
+          }}>
           <Text
             style={styles.signOutText}
             onPress={() => {
@@ -116,7 +125,11 @@ export default function DeviceSettingsScreen() {
             NOVA PREDEFINIÇÃO
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.signOutButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => {
+            onRefresh();
+          }}>
           <Text
             style={styles.signOutText}
             onPress={() => {
@@ -146,6 +159,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     flexDirection: "row",
     gap: 5,
+    flexWrap: "wrap",
+    display: "flex",
+    width: "70%",
+    backgroundColor: "transparent",
   },
   settingValueTitle: {
     color: "white",

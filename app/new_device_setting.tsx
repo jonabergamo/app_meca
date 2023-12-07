@@ -60,32 +60,33 @@ export default function CreationForm() {
         ...incubationDuration,
         error: incubationDurationError || "",
       });
-    }
-    try {
-      const response = await createDeviceSetting(
-        parseInt(session?.user.id || ""),
-        parseFloat(temperature.value),
-        parseFloat(incubationDuration.value),
-        parseFloat(humidity.value),
-        name.value
-      );
-      if (response) {
-        Toast.show("Configuração criada com sucesso", toastSettings);
+    } else {
+      try {
+        const response = await createDeviceSetting(
+          parseInt(session?.user.id || ""),
+          parseFloat(temperature.value),
+          parseFloat(incubationDuration.value),
+          parseFloat(humidity.value),
+          name.value
+        );
+        if (response) {
+          Toast.show("Configuração criada com sucesso", toastSettings);
 
-        // Limpar campos
-        setName({ value: "", error: "" });
-        setHumidity({ value: "", error: "" });
-        setTemperature({ value: "", error: "" });
-        setIncubationDuration({ value: "", error: "" });
+          // Limpar campos
+          setName({ value: "", error: "" });
+          setHumidity({ value: "", error: "" });
+          setTemperature({ value: "", error: "" });
+          setIncubationDuration({ value: "", error: "" });
 
-        // Redirecionar para a página desejada
-        router.push("/(user-routes)/devices_settings");
+          // Redirecionar para a página desejada
+          router.push("/devices_settings?refresh=true");
+        }
+      } catch (err: any) {
+        ToastAndroid.show(
+          `Um erro ocorreu ${err.toString()}`,
+          ToastAndroid.SHORT
+        );
       }
-    } catch (err: any) {
-      ToastAndroid.show(
-        `Um erro ocorreu ${err.toString()}`,
-        ToastAndroid.SHORT
-      );
     }
   };
 
@@ -194,8 +195,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   image: {
-    width: 300,
-    height: 300,
+    width: 150,
+    height: 150,
     marginBottom: 8,
   },
 });

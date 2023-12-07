@@ -69,22 +69,15 @@ export default function CreationForm() {
 
   const onCreatePressed = async () => {
     const nameError = name.value ? null : "O dispositivo precisa de um nome";
-    const selectedSettingIdError = selectedSettingId.value
-      ? null
-      : "Você precisa escolher uma configuração";
 
-    if (nameError || selectedSettingIdError) {
+    if (nameError) {
       setName({ ...name, error: nameError || "" });
-      setSelectedSettingId({
-        ...selectedSettingId,
-        error: selectedSettingIdError || "",
-      });
     } else {
       try {
         const response = await createDevice(
           parseInt(session.user.id),
           name.value,
-          parseInt(selectedSettingId.value) // Usar 'selectedSettingId' diretamente
+          selectedSettingId.value ? parseInt(selectedSettingId.value) : null // Usar 'selectedSettingId' diretamente
         );
         if (response) {
           Toast.show("Configuração criada com sucesso", toastSettings);
@@ -94,7 +87,7 @@ export default function CreationForm() {
           setSelectedSettingId({ value: "", error: "" }); // Apenas definir como string vazia
 
           // Redirecionar para a página desejada
-          router.push("/(user-routes)/devices");
+          router.push("/devices?refresh=true");
         }
       } catch (err: any) {
         ToastAndroid.show(
@@ -176,13 +169,15 @@ export default function CreationForm() {
               <View style={styles.settingValueTitle}>
                 <Text style={styles.deviceText}>Em uso por: </Text>
                 <View style={styles.settingValueContainer}>
-                  {setting?.assignedDevices?.length !== 0
-                    ? setting?.assignedDevices.map((device, index) => (
-                        <Text style={styles.settingValueText} key={index}>
-                          {device.name}
-                        </Text>
-                      ))
-                    : "Nenhm"}
+                  {setting?.assignedDevices?.length !== 0 ? (
+                    setting?.assignedDevices.map((device, index) => (
+                      <Text style={styles.settingValueText} key={index}>
+                        {device.name}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={{ color: "white" }}>Nenhum</Text>
+                  )}
                 </View>
               </View>
               {/* Outras informações que deseja exibir */}
@@ -266,6 +261,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     flexDirection: "row",
     gap: 5,
+    flexWrap: "wrap",
+    display: "flex",
+    width: "70%",
+    backgroundColor: "transparent",
   },
   settingValueTitle: {
     color: "white",

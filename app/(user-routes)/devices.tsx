@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, TouchableOpacity } from "react-native";
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 import { theme } from "../../core/theme";
-import { router } from "expo-router";
+import { router, useGlobalSearchParams } from "expo-router";
 import {
   MutableRefObject,
   useCallback,
@@ -19,6 +19,7 @@ import Toast from "react-native-root-toast";
 import * as Clipboard from "expo-clipboard";
 import { Code } from "../../ccode";
 import IncubationTimer from "../../components/incubationTimer";
+import { Ionicons } from "@expo/vector-icons";
 
 type IncubatorDeviceType = {
   __typename: string;
@@ -38,6 +39,8 @@ type IncubatorDeviceType = {
 };
 
 export default function DeviceScreen() {
+  const { refresh } = useGlobalSearchParams();
+
   const sessionInfo = useSession();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -56,7 +59,7 @@ export default function DeviceScreen() {
 
   useEffect(() => {
     fetchIncubatorsDevice();
-  }, []);
+  }, [refresh]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -84,42 +87,78 @@ export default function DeviceScreen() {
         }>
         {data &&
           data.map((device, index) => (
-            <View key={index} style={styles.settingItem}>
+            <TouchableOpacity
+              key={index}
+              style={styles.settingItem}
+              onPress={() => {
+                router.push(`/edit_device?device_id=${device.uniqueId}`);
+              }}>
               <Text style={styles.deviceName}>Nome: {device.name}</Text>
-              <Text
-                style={[
-                  styles.deviceName,
-                  { color: device?.isOn ? "green" : "red" },
-                ]}>
-                {device?.isOn ? "Ligado" : "Desligado"}
-              </Text>
-              <Text style={styles.deviceText}>
-                Sensor de Humidade: {device.humiditySensor}% /{" "}
-                {device.currentSetting.humidity}%
-              </Text>
-              <Text style={styles.deviceText}>
-                Sensor de Temperatura: {device.temperatureSensor}°C /{" "}
-                {device.currentSetting.temperature}°C
-              </Text>
-              <Text style={styles.deviceText}>
-                Inicio da incubação:{" "}
-                {device?.startTime !== null
-                  ? new Date(device.startTime).toLocaleString("pt-BR", {
-                      timeZone: "America/Sao_Paulo",
-                    })
-                  : "Não iniciado"}
-              </Text>
-              <Text style={styles.deviceText}>
-                Tempo restante de incubação:{" "}
-                <IncubationTimer
-                  device={device}
-                  incubationDuration={device.currentSetting.incubationDuration}
-                />
-              </Text>
+              {device.currentSetting ? (
+                <View style={{ backgroundColor: "transparent" }}>
+                  <Text
+                    style={[
+                      styles.deviceName,
+                      { color: device?.isOn ? "green" : "red" },
+                    ]}>
+                    {device?.isOn ? "Ligado" : "Desligado"}
+                  </Text>
+                  <Text style={styles.deviceText}>
+                    Sensor de Humidade: {device.humiditySensor}% /{" "}
+                    {device?.currentSetting?.humidity}%
+                  </Text>
+                  <Text style={styles.deviceText}>
+                    Sensor de Temperatura: {device.temperatureSensor}°C /{" "}
+                    {device?.currentSetting?.temperature}°C
+                  </Text>
+                  <Text style={styles.deviceText}>
+                    Inicio da incubação:{" "}
+                    {device?.startTime !== null
+                      ? new Date(device.startTime).toLocaleString("pt-BR", {
+                          timeZone: "America/Sao_Paulo",
+                        })
+                      : "Não iniciado"}
+                  </Text>
+                  <Text style={styles.deviceText}>
+                    Tempo restante de incubação:{" "}
+                    <IncubationTimer
+                      device={device}
+                      incubationDuration={
+                        device?.currentSetting?.incubationDuration
+                      }
+                    />
+                  </Text>
+                  <Text style={styles.deviceText}>
+                    Configuração atual: {device?.currentSetting?.name}
+                  </Text>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    backgroundColor: "red",
+                    padding: 8,
+                    borderRadius: 5,
+                  }}>
+                  <View
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      backgroundColor: "transparent",
+                      alignItems: "center",
+                      gap: 5,
+                    }}>
+                    <Ionicons name="alert-circle" size={24} color="white" />
+                    <Text style={{ fontSize: 20 }}>
+                      Dispositivo sem configuração!
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 15 }}>
+                    Clique e selecione uma configuração para visualizar as
+                    métricas.
+                  </Text>
+                </View>
+              )}
 
-              <Text style={styles.deviceText}>
-                Configuração atual: {device.currentSetting.name}
-              </Text>
               <TouchableOpacity
                 style={{ padding: 10 }}
                 onPress={() => copyToClipboard(device.uniqueId)}>
@@ -151,7 +190,7 @@ export default function DeviceScreen() {
                   COPIAR CÓDIGO EM C
                 </Text>
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           ))}
       </ScrollView>
       <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
