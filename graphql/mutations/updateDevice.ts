@@ -6,11 +6,13 @@ export const UPDATE_DEVICE = gql`
     $uniqueId: String!
     $name: String!
     $currentSettingId: Int!
+    $isOn: Boolean
   ) {
     updateIncubatorDevice(
       uniqueId: $uniqueId
       currentSettingId: $currentSettingId
       name: $name
+      isOn: $isOn
     ) {
       incubatorDevice {
         humiditySensor
@@ -30,19 +32,31 @@ export const UPDATE_DEVICE = gql`
 export const updateDevice = async (
   uniqueId: string,
   name: string,
-  currentSettingId: number
+  currentSettingId: number,
+  isOn?: boolean
 ) => {
   try {
+
+
+
+
     const response = await client.mutate({
       mutation: UPDATE_DEVICE,
       variables: {
         uniqueId,
         name,
         currentSettingId,
+        isOn,
       },
     });
     return response.data.updateIncubatorDevice;
   } catch (error: any) {
-    console.log(error.toString());
+    if (error instanceof ApolloError) {
+      // Tratamento específico para ApolloError
+      console.log(error.message);
+    } else {
+      // Tratamento para outros tipos de erros
+      console.log(error.toString());
+    }
   }
 };

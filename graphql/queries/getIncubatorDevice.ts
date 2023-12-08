@@ -12,6 +12,9 @@ export const INCUBATOR_DEVICE = gql`
       uniqueId
       currentSetting {
         id
+        temperature
+        humidity
+        name
       }
     }
   }

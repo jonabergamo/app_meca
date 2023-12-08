@@ -12,6 +12,7 @@ import DevicesModal from "../../components/DevicesModal";
 import { getIncubatorDevice } from "../../graphql/queries/getIncubatorDevice";
 import IncubationTimer from "../../components/incubationTimer";
 import MyVictoryChart from "../../components/CustomLineChart";
+import { updateDevice } from "../../graphql/mutations/updateDevice";
 
 type IncubatorDeviceType = {
   __typename: string;
@@ -31,8 +32,7 @@ type IncubatorDeviceType = {
 };
 
 export default function DashbaordScreen() {
-  const [selectedDevice, setSelectedDevice] =
-    useState<IncubatorDeviceType>();
+  const [selectedDevice, setSelectedDevice] = useState<IncubatorDeviceType>();
   const [incubatorsDevice, setIncubatorsDevice] = useState<
     IncubatorDeviceType[]
   >([]);
@@ -77,6 +77,26 @@ export default function DashbaordScreen() {
   useEffect(() => {
     fetchIncubatorsDevice();
   }, [refresh]);
+
+  const handleOn = async (newOn: boolean) => {
+    if (!selectedDevice) return;
+    try {
+      const response = await updateDevice(
+        selectedDevice?.uniqueId,
+        selectedDevice.name,
+        selectedDevice.currentSetting.id,
+        newOn
+      );
+      console.log(
+        selectedDevice?.uniqueId,
+        selectedDevice.name,
+        selectedDevice.currentSetting.id,
+        newOn
+      );
+      console.log(response);
+    } catch (error) {}
+  };
+
   return (
     incubatorsDevice && (
       <View style={styles.container}>
@@ -171,6 +191,24 @@ export default function DashbaordScreen() {
                   <Text style={styles.deviceText}>
                     Configuração atual: {selectedDevice?.currentSetting?.name}
                   </Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.signOutButton,
+                      {
+                        backgroundColor: selectedDevice.isOn ? "red" : "green",
+                      },
+                    ]}
+                    onPress={() => {
+                      handleOn(!selectedDevice.isOn);
+                    }}>
+                    <Text
+                      style={styles.signOutText}
+                      onPress={() => {
+                        handleOn(!selectedDevice.isOn);
+                      }}>
+                      {selectedDevice.isOn ? "DESLIGAR" : "LIGAR"}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <View
@@ -199,7 +237,6 @@ export default function DashbaordScreen() {
                 </View>
               )}
             </TouchableOpacity>
-
           </View>
         ) : (
           <Text>Você não possui nenhum dispositivo</Text>
@@ -234,7 +271,20 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84, // Raio da sombra
     elevation: 5, // Elevação para Android
   },
-
+  signOutButton: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  signOutText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 15,
+  },
   deviceText: {
     color: "white", // Cor do texto (ajuste conforme seu tema)
     fontSize: 16, // Tamanho da fonte
