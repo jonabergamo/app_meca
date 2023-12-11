@@ -1,161 +1,177 @@
-import React, { useEffect, useState } from "react";
-import {
-  VictoryChart,
-  VictoryBar,
-  VictoryScatter,
-  VictoryAxis,
-} from "victory-native";
-import { View } from "react-native";
-type IncubatorDeviceType = {
-  __typename: string;
-  humiditySensor: number;
-  isOn: boolean;
-  name: string;
-  startTime: any;
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+
+const MAX_HEIGHT = 200;
+const TOLERANCE = 0.05; // 10% de tolerância, ajustado para o exemplo
+
+const SensorChart = ({
+  idealTemperature,
+  idealHumidity,
+  temperatureSensor,
+  humiditySensor,
+}: {
+  idealTemperature: number;
+  idealHumidity: number;
   temperatureSensor: number;
-  uniqueId: string;
-  currentSetting: {
-    name: String;
-    temperature: number;
-    humidity: number;
-    incubationDuration: number;
-    id: number;
-  };
-};
-type MyVictoryChartProps = {
-  device: IncubatorDeviceType;
-  tolerance: number; // tolerância de 2%
-};
+  humiditySensor: number;
+}) => {
+  // Altura do ponto do sensor
+  const temperatureDotHeight =
+    (temperatureSensor / (idealTemperature * 2)) * MAX_HEIGHT;
+  const humidityDotHeight = (humiditySensor / (idealHumidity * 2)) * MAX_HEIGHT;
 
-// Substitua pelo seu componente
-const MyVictoryChart = ({ device, tolerance }: MyVictoryChartProps) => {
-  const [temperatureUpperLimit, setTemperatureUpperLimit] = useState<number>(0);
-  const [temperatureLowerLimit, setTemperatureLowerLimit] = useState<number>(0);
-  const [humidityUpperLimit, setHumidityUpperLimit] = useState<number>(0);
-  const [humidityLowerLimit, setHumidityLowerLimit] = useState<number>(0);
-  const [temperatureData, setTemperaureData] = useState([
-    { x: "Temperatura", y: 0, y0: 0 },
-  ]);
-  const [humidityData, setHumidityData] = useState([
-    { x: "Humidade", y: 0, y0: 0 },
-  ]);
+  // Define a altura para a faixa de tolerância (10% acima e abaixo da temperatura/umidade ideal)
+  const toleranceHeight = TOLERANCE * MAX_HEIGHT * 2;
 
-  useEffect(() => {
-    setTemperatureUpperLimit(
-      device.currentSetting.temperature * (1 + tolerance)
-    );
-    setTemperatureLowerLimit(
-      device.currentSetting.temperature * (1 - tolerance)
-    );
-    setHumidityUpperLimit(device.currentSetting.humidity * (1 + tolerance));
-    setHumidityLowerLimit(device.currentSetting.humidity * (1 - tolerance));
-  }, [device]);
+  // Gera labels de escala de 10 em 10 graus
+  const scaleTemperatureMarks = Array.from(
+    { length: (idealTemperature * 1.1) / 10 + 1 },
+    (_, i) => i * 15
+  );
 
-  useEffect(() => {
-    setTemperaureData([
-      {
-        x: "Temperatura",
-        y: temperatureUpperLimit,
-        y0: temperatureLowerLimit,
-      },
-    ]);
-    setHumidityData([
-      { x: "Humidade", y: humidityUpperLimit, y0: humidityLowerLimit },
-    ]);
-  }, [
-    temperatureLowerLimit,
-    temperatureUpperLimit,
-    humidityUpperLimit,
-    humidityLowerLimit,
-  ]);
+  const scaleHumidityMarks = Array.from(
+    { length: (idealHumidity * 0.9) / 10 + 1 },
+    (_, i) => i * 20
+  );
 
-  // A função de estilo verificará se o valor atual está dentro da faixa de tolerância
-  const TemperatureBarStyle = {
-    data: {
-      fill: ({ datum }: { datum: any }) =>
-        device.temperatureSensor > datum.y0 &&
-        device.temperatureSensor < datum.y
-          ? "green"
-          : "red",
-    },
-  };
+  // Verifica se o ponto está dentro da faixa de tolerância
+  const isTemperatureWithinTolerance =
+    temperatureSensor >= idealTemperature * (1 - TOLERANCE) &&
+    temperatureSensor <= idealTemperature * (1 + TOLERANCE);
+  const isHumidityWithinTolerance =
+    humiditySensor >= idealHumidity * (1 - TOLERANCE) &&
+    humiditySensor <= idealHumidity * (1 + TOLERANCE);
 
-  const HumidityBarStyle = {
-    data: {
-      fill: ({ datum }: { datum: any }) =>
-        device.humiditySensor > datum.y0 && device.humiditySensor < datum.y
-          ? "green"
-          : "red",
-    },
-  };
+  // Cor de fundo baseada na tolerância
+  const temperatureBackgroundColor = isTemperatureWithinTolerance
+    ? "green"
+    : "red";
+  const humidityBackgroundColor = isHumidityWithinTolerance ? "green" : "red";
 
   return (
-    <View
-      style={{
-        backgroundColor: "transparent",
-        flexDirection: "row",
-      }}>
-      <VictoryChart domainPadding={40} width={200} height={300}>
-        <VictoryBar
-          data={temperatureData}
-          style={TemperatureBarStyle as any}
-          barWidth={100}
+    <View style={styles.container}>
+      {/* Gráfico de Temperatura */}
+      <View style={styles.chartContainer}>
+        <View style={styles.scaleContainer}>
+          {scaleTemperatureMarks.map((mark) => (
+            <ScaleLabel
+              key={mark}
+              value={mark}
+              maxValue={idealTemperature * 2}
+            />
+          ))}
+        </View>
+        {/* Faixa de Tolerância */}
+        <View
+          style={[
+            styles.toleranceBar,
+            {
+              backgroundColor: temperatureBackgroundColor,
+              height: toleranceHeight,
+            },
+          ]}
         />
-        <VictoryScatter
-          data={[{ x: "Temperatura", y: device.temperatureSensor }]}
-          size={4}
-          style={{
-            data: { fill: "white" },
-          }}
-        />
-        <VictoryAxis
-          style={{
-            axis: { stroke: "white" },
-            ticks: { stroke: "white" },
-            tickLabels: { fill: "white" },
-          }}
-        />
-        <VictoryAxis
-          dependentAxis
-          style={{
-            axis: { stroke: "white" },
-            ticks: { stroke: "white" },
-            tickLabels: { fill: "white" },
-          }}
-        />
-      </VictoryChart>
 
-      <VictoryChart domainPadding={40} width={200} height={300}>
-        <VictoryBar
-          data={humidityData}
-          style={HumidityBarStyle as any}
-          barWidth={100}
+        {/* Ponto da Temperatura Atual */}
+        <View
+          style={[
+            styles.dot,
+            { bottom: temperatureDotHeight - styles.dot.height / 2 },
+          ]}
         />
-        <VictoryScatter
-          data={[{ x: "Humidade", y: device.humiditySensor }]}
-          size={4}
-          style={{
-            data: { fill: "white" },
-          }}
+        <Text style={styles.label}>Temperatura</Text>
+      </View>
+
+      {/* Gráfico de Umidade */}
+      <View style={styles.chartContainer}>
+        <View style={styles.scaleContainer}>
+          {scaleHumidityMarks.map((mark) => (
+            <ScaleLabel key={mark} value={mark} maxValue={idealHumidity * 2} />
+          ))}
+        </View>
+        {/* Faixa de Tolerância */}
+        <View
+          style={[
+            styles.toleranceBar,
+            {
+              backgroundColor: humidityBackgroundColor,
+              height: toleranceHeight,
+            },
+          ]}
         />
-        <VictoryAxis
-          style={{
-            axis: { stroke: "white" },
-            ticks: { stroke: "white" },
-            tickLabels: { fill: "white" },
-          }}
+
+        {/* Ponto da Umidade Atual */}
+        <View
+          style={[
+            styles.dot,
+            { bottom: humidityDotHeight - styles.dot.height / 2 },
+          ]}
         />
-        <VictoryAxis
-          dependentAxis
-          style={{
-            axis: { stroke: "white" },
-            ticks: { stroke: "white" },
-            tickLabels: { fill: "white" },
-          }}
-        />
-      </VictoryChart>
+        <Text style={styles.label}>Umidade</Text>
+      </View>
     </View>
   );
 };
 
-export default MyVictoryChart;
+const ScaleLabel = ({
+  value,
+  maxValue,
+}: {
+  value: number;
+  maxValue: number;
+}) => {
+  const yPos = (value / maxValue) * MAX_HEIGHT;
+  return (
+    <Text style={[styles.scaleLabel, { bottom: yPos - 10 }]}>{value}</Text>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    height: MAX_HEIGHT + 50, // altura total do gráfico + espaço para o label
+  },
+  scaleContainer: {
+    position: "absolute",
+    height: MAX_HEIGHT,
+    justifyContent: "space-between",
+    left: 0,
+  },
+  chartContainer: {
+    backgroundColor: "#2d2d2d",
+    width: 100, // Ajuste a largura conforme necessário
+    alignItems: "center",
+    height: MAX_HEIGHT,
+    position: "relative",
+    marginLeft: 30, // Espaço para as labels de escala
+  },
+  toleranceBar: {
+    backgroundColor: "green",
+    width: "100%",
+    position: "absolute",
+    bottom: MAX_HEIGHT / 2 - TOLERANCE * MAX_HEIGHT, // Centralizar a faixa de tolerância
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 5,
+    backgroundColor: "white",
+    position: "absolute",
+  },
+  label: {
+    color: "white",
+    position: "absolute",
+    bottom: -20, // Ajuste conforme necessário
+  },
+  scaleLabel: {
+    color: "white",
+    position: "absolute",
+    left: -25, // Ajuste conforme necessário para alinhar as label
+    fontSize: 10,
+  },
+});
+
+export default SensorChart;

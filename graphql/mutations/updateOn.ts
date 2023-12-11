@@ -1,8 +1,8 @@
 import { ApolloError, gql } from "@apollo/client";
 import client from "../../apolloClient"; // Seu Apollo Client
 
-export const UPDATE_DEVICE = gql`
-  mutation updateDevice(
+export const UPDATE_ON = gql`
+  mutation updateOn(
     $uniqueId: String!
     $name: String
     $currentSettingId: Int
@@ -29,20 +29,17 @@ export const UPDATE_DEVICE = gql`
   }
 `;
 
-export const updateDevice = async (
+export const updateOn = async (
   uniqueId: string,
-  name?: string,
-  currentSettingId?: number,
+
   isOn?: boolean
 ) => {
   try {
     const response = await client.mutate({
-      mutation: UPDATE_DEVICE,
+      mutation: UPDATE_ON,
       variables: {
         uniqueId: "0550700e-7fec-4fe4-bd51-013dfa3e99c2",
         isOn: isOn,
-        currentSettingId,
-        name,
       },
     });
     return response.data.updateIncubatorDevice;

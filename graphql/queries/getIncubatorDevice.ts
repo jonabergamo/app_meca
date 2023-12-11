@@ -11,10 +11,11 @@ export const INCUBATOR_DEVICE = gql`
       temperatureSensor
       uniqueId
       currentSetting {
-        id
-        temperature
         humidity
+        id
+        incubationDuration
         name
+        temperature
       }
     }
   }

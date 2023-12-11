@@ -6,11 +6,13 @@ type ShureDeleteModalType = {
   visible: boolean;
   onConfirm?: () => void;
   onCancel?: () => void;
+  text?: string;
 };
 export default function ShureDeleteModal({
   visible,
   onConfirm,
   onCancel,
+  text = "Tem certeza que deseja excluir?",
 }: ShureDeleteModalType) {
   return (
     <Modal
@@ -20,7 +22,7 @@ export default function ShureDeleteModal({
       onRequestClose={onCancel}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>Tem certeza que deseja excluir?</Text>
+          <Text style={styles.modalText}>{text}</Text>
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={[styles.button, styles.buttonClose]}

@@ -13,6 +13,9 @@ import { getIncubatorDevice } from "../../graphql/queries/getIncubatorDevice";
 import IncubationTimer from "../../components/incubationTimer";
 import MyVictoryChart from "../../components/CustomLineChart";
 import { updateDevice } from "../../graphql/mutations/updateDevice";
+import SensorChart from "../../components/CustomLineChart";
+import { updateOn } from "../../graphql/mutations/updateOn";
+import ShureDeleteModal from "../../components/ShureDeleteModal";
 
 type IncubatorDeviceType = {
   __typename: string;
@@ -38,6 +41,7 @@ export default function DashbaordScreen() {
   >([]);
   const { refresh } = useGlobalSearchParams();
   const [showModal, setShowModal] = useState(false);
+  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
 
   const sessionInfo = useSession();
   const [refreshing, setRefreshing] = useState(false);
@@ -70,7 +74,7 @@ export default function DashbaordScreen() {
     try {
       const response = await getIncubatorDevice(selectedDevice?.uniqueId);
       setSelectedDevice(response);
-      console.log(response);
+      // console.log(response);
     } catch (error) {}
   };
 
@@ -78,22 +82,13 @@ export default function DashbaordScreen() {
     fetchIncubatorsDevice();
   }, [refresh]);
 
-  const handleOn = async (newOn: boolean) => {
+  const onToggleOnPressed = async (newOn: boolean) => {
     if (!selectedDevice) return;
     try {
-      const response = await updateDevice(
-        selectedDevice?.uniqueId,
-        selectedDevice.name,
-        selectedDevice.currentSetting.id,
-        newOn
-      );
-      console.log(
-        selectedDevice?.uniqueId,
-        selectedDevice.name,
-        selectedDevice.currentSetting.id,
-        newOn
-      );
+      const response = await updateOn(selectedDevice?.uniqueId, newOn);
+      console.log(selectedDevice?.uniqueId, newOn);
       console.log(response);
+      setIsDeleteVisible(false);
     } catch (error) {}
   };
 
@@ -103,6 +98,16 @@ export default function DashbaordScreen() {
         {/* {incubatorsDevice.map((device, index) => (
         <Text key={index}>{device.name}</Text>
       ))} */}
+        <ShureDeleteModal
+          visible={isDeleteVisible}
+          onCancel={() => {
+            setIsDeleteVisible(false);
+          }}
+          onConfirm={() => {
+            if (selectedDevice) onToggleOnPressed(!selectedDevice.isOn);
+          }}
+          text={"Tem certeza que deseja desligar?"}
+        />
         <DevicesModal
           visible={showModal}
           devices={incubatorsDevice}
@@ -199,12 +204,20 @@ export default function DashbaordScreen() {
                       },
                     ]}
                     onPress={() => {
-                      handleOn(!selectedDevice.isOn);
+                      if (selectedDevice.isOn) {
+                        setIsDeleteVisible(true);
+                      } else {
+                        onToggleOnPressed(!selectedDevice.isOn);
+                      }
                     }}>
                     <Text
                       style={styles.signOutText}
                       onPress={() => {
-                        handleOn(!selectedDevice.isOn);
+                        if (selectedDevice.isOn) {
+                          setIsDeleteVisible(true);
+                        } else {
+                          onToggleOnPressed(!selectedDevice.isOn);
+                        }
                       }}>
                       {selectedDevice.isOn ? "DESLIGAR" : "LIGAR"}
                     </Text>
@@ -237,6 +250,12 @@ export default function DashbaordScreen() {
                 </View>
               )}
             </TouchableOpacity>
+            <SensorChart
+              idealTemperature={selectedDevice.currentSetting.temperature}
+              idealHumidity={selectedDevice.currentSetting.humidity}
+              temperatureSensor={selectedDevice.temperatureSensor}
+              humiditySensor={selectedDevice.humiditySensor}
+            />
           </View>
         ) : (
           <Text>Você não possui nenhum dispositivo</Text>
