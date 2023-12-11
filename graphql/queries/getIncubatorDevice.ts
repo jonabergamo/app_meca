@@ -10,6 +10,7 @@ export const INCUBATOR_DEVICE = gql`
       startTime
       temperatureSensor
       uniqueId
+      lastCompletionData
       currentSetting {
         humidity
         id

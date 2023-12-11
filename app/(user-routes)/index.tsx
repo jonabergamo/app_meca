@@ -25,6 +25,7 @@ type IncubatorDeviceType = {
   startTime: any;
   temperatureSensor: number;
   uniqueId: string;
+  lastCompletionData: Date;
   currentSetting: {
     name: String;
     temperature: number;
@@ -74,7 +75,7 @@ export default function DashbaordScreen() {
     try {
       const response = await getIncubatorDevice(selectedDevice?.uniqueId);
       setSelectedDevice(response);
-      // console.log(response);
+      console.log(response);
     } catch (error) {}
   };
 
@@ -192,6 +193,14 @@ export default function DashbaordScreen() {
                         selectedDevice?.currentSetting?.incubationDuration
                       }
                     />
+                  </Text>
+                  <Text style={styles.deviceText}>
+                    Término da ultima incubação:{" "}
+                    <Text>
+                      {new Date(
+                        selectedDevice.lastCompletionData
+                      ).toLocaleString()}
+                    </Text>
                   </Text>
                   <Text style={styles.deviceText}>
                     Configuração atual: {selectedDevice?.currentSetting?.name}

@@ -21,6 +21,7 @@ export const UPDATE_ON = gql`
         startTime
         temperatureSensor
         uniqueId
+        lastCompletionData
         currentSetting {
           id
         }

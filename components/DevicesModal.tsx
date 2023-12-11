@@ -20,6 +20,7 @@ type IncubatorDeviceType = {
   name: string;
   startTime: any;
   temperatureSensor: number;
+  lastCompletionData: Date;
   uniqueId: string;
   currentSetting: {
     name: String;
