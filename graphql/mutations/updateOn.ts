@@ -30,16 +30,12 @@ export const UPDATE_ON = gql`
   }
 `;
 
-export const updateOn = async (
-  uniqueId: string,
-
-  isOn?: boolean
-) => {
+export const updateOn = async (uniqueId: string, isOn?: boolean) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_ON,
       variables: {
-        uniqueId: "0550700e-7fec-4fe4-bd51-013dfa3e99c2",
+        uniqueId: uniqueId,
         isOn: isOn,
       },
     });

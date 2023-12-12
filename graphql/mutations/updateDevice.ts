@@ -39,7 +39,7 @@ export const updateDevice = async (
     const response = await client.mutate({
       mutation: UPDATE_DEVICE,
       variables: {
-        uniqueId: "0550700e-7fec-4fe4-bd51-013dfa3e99c2",
+        uniqueId: uniqueId,
         isOn: isOn,
         currentSettingId,
         name,

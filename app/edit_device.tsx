@@ -133,6 +133,11 @@ export default function EditDeviceForm() {
       });
     } else {
       try {
+        console.log(
+          device?.uniqueId,
+          name.value,
+          parseInt(selectedSettingId.value)
+        );
         const response = await updateDevice(
           device?.uniqueId,
           name.value,

@@ -16,6 +16,7 @@ import { updateDevice } from "../../graphql/mutations/updateDevice";
 import SensorChart from "../../components/CustomLineChart";
 import { updateOn } from "../../graphql/mutations/updateOn";
 import ShureDeleteModal from "../../components/ShureDeleteModal";
+import { Audio } from "expo-av";
 
 type IncubatorDeviceType = {
   __typename: string;
@@ -35,6 +36,8 @@ type IncubatorDeviceType = {
   };
 };
 
+const soundObject = new Audio.Sound();
+
 export default function DashbaordScreen() {
   const [selectedDevice, setSelectedDevice] = useState<IncubatorDeviceType>();
   const [incubatorsDevice, setIncubatorsDevice] = useState<
@@ -46,6 +49,14 @@ export default function DashbaordScreen() {
 
   const sessionInfo = useSession();
   const [refreshing, setRefreshing] = useState(false);
+
+  const loadSound = async () => {
+    await soundObject.loadAsync(require("../../assets/chick-sound.mp3"));
+  };
+
+  useEffect(() => {
+    loadSound();
+  }, []);
 
   if (!sessionInfo || !sessionInfo.session) {
     return <Text>Session info not available</Text>;
@@ -66,16 +77,21 @@ export default function DashbaordScreen() {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchDevice();
-    }, 1000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [selectedDevice]);
 
   const fetchDevice = async () => {
     if (!selectedDevice) return;
     try {
-      const response = await getIncubatorDevice(selectedDevice?.uniqueId);
+      const response: IncubatorDeviceType = await getIncubatorDevice(
+        selectedDevice?.uniqueId
+      );
+      if (selectedDevice.isOn && !response.isOn) {
+        console.log("ativou");
+        await soundObject.playAsync();
+      }
       setSelectedDevice(response);
-      console.log(response);
     } catch (error) {}
   };
 
@@ -88,7 +104,6 @@ export default function DashbaordScreen() {
     try {
       const response = await updateOn(selectedDevice?.uniqueId, newOn);
       console.log(selectedDevice?.uniqueId, newOn);
-      console.log(response);
       setIsDeleteVisible(false);
     } catch (error) {}
   };
@@ -96,9 +111,6 @@ export default function DashbaordScreen() {
   return (
     incubatorsDevice && (
       <View style={styles.container}>
-        {/* {incubatorsDevice.map((device, index) => (
-        <Text key={index}>{device.name}</Text>
-      ))} */}
         <ShureDeleteModal
           visible={isDeleteVisible}
           onCancel={() => {
@@ -187,20 +199,26 @@ export default function DashbaordScreen() {
                   </Text>
                   <Text style={styles.deviceText}>
                     Tempo restante de incubação:{" "}
-                    <IncubationTimer
-                      device={selectedDevice}
-                      incubationDuration={
-                        selectedDevice?.currentSetting?.incubationDuration
-                      }
-                    />
+                    {selectedDevice.startTime && (
+                      <IncubationTimer
+                        device={selectedDevice}
+                        incubationDuration={
+                          selectedDevice?.currentSetting?.incubationDuration
+                        }
+                      />
+                    )}
                   </Text>
                   <Text style={styles.deviceText}>
                     Término da ultima incubação:{" "}
-                    <Text>
-                      {new Date(
-                        selectedDevice.lastCompletionData
-                      ).toLocaleString()}
-                    </Text>
+                    {selectedDevice.lastCompletionData ? (
+                      <Text>
+                        {new Date(
+                          selectedDevice.lastCompletionData
+                        ).toLocaleString()}
+                      </Text>
+                    ) : (
+                      <Text>Nunca finalizado</Text>
+                    )}
                   </Text>
                   <Text style={styles.deviceText}>
                     Configuração atual: {selectedDevice?.currentSetting?.name}
@@ -259,12 +277,14 @@ export default function DashbaordScreen() {
                 </View>
               )}
             </TouchableOpacity>
-            <SensorChart
-              idealTemperature={selectedDevice.currentSetting.temperature}
-              idealHumidity={selectedDevice.currentSetting.humidity}
-              temperatureSensor={selectedDevice.temperatureSensor}
-              humiditySensor={selectedDevice.humiditySensor}
-            />
+            {selectedDevice.currentSetting && (
+              <SensorChart
+                idealTemperature={selectedDevice?.currentSetting?.temperature}
+                idealHumidity={selectedDevice?.currentSetting?.humidity}
+                temperatureSensor={selectedDevice?.temperatureSensor}
+                humiditySensor={selectedDevice?.humiditySensor}
+              />
+            )}
           </View>
         ) : (
           <Text>Você não possui nenhum dispositivo</Text>

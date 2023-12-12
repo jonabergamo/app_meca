@@ -48,7 +48,7 @@ const SensorChart = ({
     : "red";
   const humidityBackgroundColor = isHumidityWithinTolerance ? "green" : "red";
 
-  return (
+  return  (
     <View style={styles.container}>
       {/* Gráfico de Temperatura */}
       <View style={styles.chartContainer}>

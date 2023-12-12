@@ -6,7 +6,7 @@ export const UPDATE_DEVICE_SETTING = gql`
     $id: Int!
     $name: String!
     $humidity: Float!
-    $incubationDuration: Int!
+    $incubationDuration: Float!
     $temperature: Float!
   ) {
     updateIncubatorSetting(
