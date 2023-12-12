@@ -66,8 +66,7 @@ function RootLayoutNav() {
   return (
     <RootSiblingParent>
       <SessionProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DarkTheme}>
           <Stack>
             <Stack.Screen
               name="(user-routes)"
