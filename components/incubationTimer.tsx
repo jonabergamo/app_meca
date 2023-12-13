@@ -27,7 +27,7 @@ const IncubationTimer: React.FC<IncubationTimerProps> = ({
           startTime.getTime() + incubationDuration * 3600000
         );
         const now = new Date();
-        const timeLeft = endTime.getTime() - now.getTime() - 13000; // Subtrai 13 segundos
+        const timeLeft = endTime.getTime() - now.getTime(); // Subtrai 13 segundos
 
         if (timeLeft > 0) {
           let hours = Math.floor(timeLeft / (1000 * 60 * 60));

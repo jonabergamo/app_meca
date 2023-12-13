@@ -90,6 +90,7 @@ export default function DashbaordScreen() {
       if (selectedDevice.isOn && !response.isOn) {
         console.log("ativou");
         await soundObject.playAsync();
+        await soundObject.stopAsync();
       }
       setSelectedDevice(response);
     } catch (error) {}
